@@ -1,23 +1,29 @@
 package utils
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
-func LoadEnv(path *string) {
+func LoadEnv(paths ...*string) {
 	var err error
 
-	if path == nil {
+	if paths == nil {
 		err = godotenv.Load()
 	} else {
-		err = godotenv.Load(*path)
+		for _, path := range paths {
+			err = godotenv.Load(*path)
+			if err != nil {
+				log.Fatal(fmt.Sprintf("Error loading %s file", *path), err)
+			}
+		}
 	}
 
 	if err != nil {
-		log.Fatal("Error loading .env file.")
+		log.Fatal("Error loading .env file.", err)
 	}
 }
 
