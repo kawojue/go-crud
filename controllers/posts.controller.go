@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,7 +10,28 @@ import (
 )
 
 func CreatePost(ctx *gin.Context) {
-	post := models.Post{Title: "New Post", Body: "Hello, World!"}
+	var body struct {
+		Title string
+		Body  string
+	}
+
+	err := ctx.Bind(&body)
+	if err != nil {
+		log.Fatal("Error binding data.", err)
+	}
+
+	if body.Title == "" && body.Body == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"message": "All fields cannot be blank",
+		})
+		return
+	}
+
+	post := models.Post{
+		Title: body.Title,
+		Body:  body.Body,
+	}
 
 	result := db.DB.Create(&post)
 
@@ -19,6 +41,17 @@ func CreatePost(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
-		"message": "Post created.",
+		"status": "success",
+		"post":   post,
+	})
+}
+
+func ReadPost(ctx *gin.Context) {
+	var posts []*models.Post
+	db.DB.Find(&posts)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"posts":  posts,
 	})
 }
