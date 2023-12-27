@@ -11,7 +11,7 @@ import (
 func LoadEnv(paths ...*string) {
 	var err error
 
-	if paths == nil {
+	if len(paths) == 1 && paths[0] == nil {
 		err = godotenv.Load()
 	} else {
 		for _, path := range paths {
