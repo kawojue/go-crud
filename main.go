@@ -7,6 +7,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	db "github.com/kawojue/go-crud/DB"
+	"github.com/kawojue/go-crud/routes"
 	"github.com/kawojue/go-crud/utils"
 )
 
@@ -32,6 +33,8 @@ func main() {
 			"message": "Welcome",
 		})
 	})
+
+	routes.PostRoute(router)
 
 	router.Run(fmt.Sprintf(":%s", PORT))
 }
