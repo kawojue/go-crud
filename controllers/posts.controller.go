@@ -46,7 +46,7 @@ func CreatePost(ctx *gin.Context) {
 	})
 }
 
-func ReadPost(ctx *gin.Context) {
+func ReadPosts(ctx *gin.Context) {
 	var posts []*models.Post
 	db.DB.Find(&posts)
 

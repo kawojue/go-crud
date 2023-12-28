@@ -9,6 +9,6 @@ func PostRoute(route *gin.Engine) {
 	postRoute := route.Group("/api/post")
 	{
 		postRoute.POST("/", controllers.CreatePost)
-		postRoute.GET("/", controllers.ReadPost)
+		postRoute.GET("/", controllers.ReadPosts)
 	}
 }
