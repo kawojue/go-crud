@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	db "github.com/kawojue/go-crud/DB"
 	"github.com/kawojue/go-crud/models"
+	"gorm.io/gorm"
 )
 
 func CreatePost(ctx *gin.Context) {
@@ -53,5 +54,33 @@ func ReadPosts(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"posts":  posts,
+	})
+}
+
+func ReadPost(ctx *gin.Context) {
+	var post *models.Post
+	id := ctx.Param("id")
+
+	err := db.DB.Where("id = ?", id).First(&post).Error
+
+	if err == gorm.ErrRecordNotFound {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  "error",
+			"message": "Post not found.",
+		})
+		return
+	}
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"message": "Something went wrong.",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"post":   post,
 	})
 }
