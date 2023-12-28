@@ -10,5 +10,6 @@ func PostRoute(route *gin.Engine) {
 	{
 		postRoute.POST("/", controllers.CreatePost)
 		postRoute.GET("/", controllers.ReadPosts)
+		postRoute.GET("/:id", controllers.ReadPost)
 	}
 }
