@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/kawojue/go-crud/DB"
@@ -21,7 +23,10 @@ func CreatePost(ctx *gin.Context) {
 		log.Fatal("Error binding data.", err)
 	}
 
-	if body.Title == "" && body.Body == "" {
+	title := strings.TrimSpace(body.Title)
+	body_ := strings.TrimSpace(body.Body)
+
+	if title == "" && body_ == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"status":  "error",
 			"message": "All fields cannot be blank",
@@ -30,8 +35,8 @@ func CreatePost(ctx *gin.Context) {
 	}
 
 	post := models.Post{
-		Title: body.Title,
-		Body:  body.Body,
+		Title: title,
+		Body:  body_,
 	}
 
 	result := db.DB.Create(&post)
@@ -48,7 +53,7 @@ func CreatePost(ctx *gin.Context) {
 }
 
 func ReadPosts(ctx *gin.Context) {
-	var posts []*models.Post
+	var posts []models.Post
 	db.DB.Find(&posts)
 
 	ctx.JSON(http.StatusOK, gin.H{
@@ -58,7 +63,7 @@ func ReadPosts(ctx *gin.Context) {
 }
 
 func ReadPost(ctx *gin.Context) {
-	var post *models.Post
+	var post models.Post
 	id := ctx.Param("id")
 
 	err := db.DB.Where("id = ?", id).First(&post).Error
@@ -82,5 +87,64 @@ func ReadPost(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"post":   post,
+	})
+}
+
+func UpdatePost(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	var (
+		body struct {
+			Title string `json:"title" binding:"required"`
+			Body  string `json:"body" binding:"required"`
+		}
+		err  error
+		post models.Post
+	)
+
+	if err = ctx.ShouldBindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"message": "Invalid request body",
+		})
+		return
+	}
+
+	title := strings.TrimSpace(body.Title)
+	body_ := strings.TrimSpace(body.Body)
+
+	if title == "" && body_ == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"message": "All fields cannot be empty.",
+		})
+		return
+	}
+
+	if err = db.DB.First(&post, id).Error; err == gorm.ErrRecordNotFound || err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  "error",
+			"message": "Post not found.",
+		})
+		return
+	}
+
+}
+
+func DeletePost(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var post models.Post
+
+	if err := db.DB.Where("id = ?", id).Delete(&post).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"message": "Error deleting post.",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Post with ID: %v has been deleted", id),
 	})
 }
