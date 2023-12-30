@@ -8,8 +8,10 @@ import (
 func PostRoute(route *gin.Engine) {
 	postRoute := route.Group("/api/post")
 	{
-		postRoute.POST("/", controllers.CreatePost)
 		postRoute.GET("/", controllers.ReadPosts)
+		postRoute.POST("/", controllers.CreatePost)
 		postRoute.GET("/:id", controllers.ReadPost)
+		postRoute.PUT("/:id", controllers.UpdatePost)
+		postRoute.DELETE("/:id", controllers.DeletePost)
 	}
 }
