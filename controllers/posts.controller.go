@@ -95,17 +95,17 @@ func UpdatePost(ctx *gin.Context) {
 
 	var (
 		body struct {
-			Title string `json:"title" binding:"required"`
-			Body  string `json:"body" binding:"required"`
+			Title string
+			Body  string
 		}
 		err  error
 		post models.Post
 	)
 
-	if err = ctx.ShouldBindJSON(&body); err != nil {
+	if err = ctx.Bind(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"status":  "error",
-			"message": "Invalid request body",
+			"message": "Invalid request body.",
 		})
 		return
 	}
@@ -129,13 +129,37 @@ func UpdatePost(ctx *gin.Context) {
 		return
 	}
 
+	if err = db.DB.Model(&post).Updates(models.Post{Title: title, Body: body_}).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  "error",
+			"message": "Error updating post.",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"post":   post,
+	})
+
 }
 
 func DeletePost(ctx *gin.Context) {
-	id := ctx.Param("id")
-	var post models.Post
+	var (
+		id   string = ctx.Param("id")
+		post models.Post
+		err  error
+	)
 
-	if err := db.DB.Where("id = ?", id).Delete(&post).Error; err != nil {
+	if err = db.DB.First(&post, id).Error; err == gorm.ErrRecordNotFound {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  "error",
+			"message": "Post not found.",
+		})
+		return
+	}
+
+	if err = db.DB.Where("id = ?", id).Delete(&post).Error; err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"status":  "error",
 			"message": "Error deleting post.",
