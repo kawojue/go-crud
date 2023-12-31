@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	gologger "github.com/kawojue/gin-gologger"
 	db "github.com/kawojue/go-crud/DB"
 	"github.com/kawojue/go-crud/routes"
 	"github.com/kawojue/go-crud/utils"
@@ -27,6 +28,8 @@ func main() {
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST"},
 	}))
+
+	router.Use(gologger.Logger("dev"))
 
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
